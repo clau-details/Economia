@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#eaf3fb" />
+<title>Admin · Catálogo</title>
+<style>
+  :root {
+    --bg: #eaf3fb;
+    --panel: #ffffff;
+    --panel-2: #f4f9fd;
+    --border: #cfe2f0;
+    --text: #0f2a3d;
+    --muted: #5f7a8f;
+    --accent: #2f9be8;
+    --accent-hover: #1f83cc;
+    --accent-soft: #e3f1fb;
+    --accent-text: #0d6fb8;
+    --danger: #e5464f;
+    --danger-hover: #c93b40;
+    --ok: #1eaf74;
+    --radius: 12px;
+    --shadow: 0 8px 28px rgba(20,60,90,.12);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: none;
+  }
+  header {
+    padding: 18px 24px;
+    padding-top: max(18px, env(safe-area-inset-top, 0px));
+    background: linear-gradient(135deg, #2f9be8, #5cb6f0);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(20,80,120,.18);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  header h1 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+  header h1 span { color: #fff; opacity: .85; font-weight: 600; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(20,80,120,.06);
+  }
+  .tab-btn {
+    flex: 1 1 50%;
+    max-width: 50%;
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 14px 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    touch-action: manipulation;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent-text);
+    border-bottom-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .panel-head h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-text);
+  }
+
+  /* Listas */
+  ul.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  ul.list li {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(20,80,120,.06);
+    transition: background .15s;
+  }
+  ul.list li:hover { background: var(--panel-2); }
+  .item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.3;
+  }
+  .item-info .title { font-weight: 700; font-size: 0.88rem; color: var(--text); }
+  .item-info .sub { font-size: 0.74rem; color: var(--muted); }
+  .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 24px 16px;
+    background: var(--panel);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+
+  /* Botones */
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    background: var(--accent);
+    color: white;
+    transition: background 0.15s, transform .1s;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  button:hover { background: var(--accent-hover); }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  button.ghost {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--accent-text);
+  }
+  button.ghost:hover { background: var(--accent-soft); }
+  button.danger { background: var(--danger); }
+  button.danger:hover { background: var(--danger-hover); }
+  button.sm { padding: 5px 10px; font-size: 0.75rem; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,42,61,.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 20px;
+    padding-top: max(20px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    z-index: 50;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    margin: auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 440px;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(20,60,90,.25);
+    animation: pop 0.2s cubic-bezier(.2,0,.2,1);
+  }
+  @keyframes pop {
+    from { transform: scale(0.94); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .modal h3 {
+    margin: 0 0 18px;
+    font-size: 1.1rem;
+    color: var(--accent-text);
+    font-weight: 800;
+  }
+  .modal .field { margin-bottom: 14px; }
+  .modal label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .modal input, .modal select {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    touch-action: manipulation;
+  }
+  .modal input:focus, .modal select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(47,155,232,.15);
+    background: #fff;
+  }
+  .modal .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .modal-actions button { flex: 1; min-height: 44px; }
+  .modal-actions .ghost { color: var(--muted); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--ok);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    transition: transform 0.3s ease;
+    z-index: 100;
+    max-width: min(90vw, 400px);
+    width: max-content;
+    text-align: center;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(20,60,90,.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--danger); color: white; }
+
+  /* Responsive móvil */
+  @media (max-width: 640px) {
+    header { padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top, 0px)); }
+    header h1 { font-size: 1.1rem; }
+
+    .tabs { padding: 0; }
+    .tab-btn { padding: 13px 6px; font-size: 0.9rem; }
+
+    main { padding: 16px; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+
+    .panel-head { margin-bottom: 12px; }
+    .panel-head h2 { font-size: 1.05rem; }
+    .panel-head > button { flex: 1 1 auto; min-height: 44px; }
+
+    ul.list { gap: 8px; }
+    ul.list li { padding: 10px; gap: 8px; }
+
+    .item-actions {
+      width: 100%;
+      flex-shrink: 1;
+    }
+    .item-actions button {
+      flex: 1;
+      min-height: 36px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+
+    .modal-overlay { padding: 12px; align-items: flex-end; }
+    .modal {
+      padding: 20px;
+      border-radius: 16px;
+      max-width: 100%;
+    }
+    .modal h3 { font-size: 1.05rem; margin-bottom: 16px; }
+    .modal-actions button { min-height: 46px; }
+    .modal input, .modal select { padding: 13px 14px; }
+
+    .toast { max-width: calc(100vw - 24px); padding: 12px 16px; }
+  }
+
+  @media (max-width: 380px) {
+    .modal .row-2 { grid-template-columns: 1fr; }
+    header h1 { font-size: 1rem; }
+    .tab-btn { padding: 12px 4px; font-size: 0.85rem; }
+    ul.list li { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Admin · <span>Catálogo</span></h1>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="monedas">Monedas</button>
+  <button class="tab-btn" data-tab="metodos">Métodos de pago</button>
+</div>
+
+<main>
+  <!-- ===== PANEL MONEDAS ===== -->
+  <div class="panel active" id="panel-monedas">
+    <div class="panel-head">
+      
+      <button id="btn-add-moneda">+ Añadir moneda</button>
+    </div>
+    <ul class="list" id="lista-monedas">
+      <li class="empty">Cargando…</li>
+    </ul>
+  </div>
+
+  <!-- ===== PANEL METODOS ===== -->
+  <div class="panel" id="panel-metodos">
+    <div class="panel-head">
+      <h2>Métodos de pago</h2>
+      <button id="btn-add-metodo">+ Añadir método</button>
+    </div>
+    <ul class="list" id="lista-metodos">
+      <li class="empty">Cargando…</li>
+    </ul>
+  </div>
+</main>
+
+<!-- ===== MODAL MONEDA ===== -->
+<div class="modal-overlay" id="modal-moneda">
+  <div class="modal">
+    <h3 id="modal-moneda-title">Añadir moneda</h3>
+    <form id="form-moneda">
+      <input type="hidden" id="moneda-id" />
+      <div class="field">
+        <label for="moneda-nombre">Nombre</label>
+        <input id="moneda-nombre" placeholder="Ej: Dólar Estadounidense" required autocomplete="off" />
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label for="moneda-sigla">Sigla</label>
+          <input id="moneda-sigla" placeholder="Ej: USD" required maxlength="10" autocomplete="off" autocapitalize="characters" />
+        </div>
+        <div class="field">
+          <label for="moneda-valor">Valor en CUP</label>
+          <input id="moneda-valor" type="number" step="0.01" min="0" inputmode="decimal" placeholder="Ej: 320" required />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="ghost" data-close="modal-moneda">Cancelar</button>
+        <button type="submit" id="moneda-submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL METODO ===== -->
+<div class="modal-overlay" id="modal-metodo">
+  <div class="modal">
+    <h3 id="modal-metodo-title">Añadir método de pago</h3>
+    <form id="form-metodo">
+      <input type="hidden" id="metodo-id" />
+      <div class="field">
+        <label for="metodo-nombre">Nombre del método</label>
+        <input id="metodo-nombre" placeholder="Ej: Zelle" required autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="metodo-moneda">Moneda asignada</label>
+        <select id="metodo-moneda" required>
+          <option value="" disabled selected>-- Selecciona una moneda --</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="ghost" data-close="modal-metodo">Cancelar</button>
+        <button type="submit" id="metodo-submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+var API_BASE = "https://monedas.soyjhonydival.workers.dev";
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function $(id) { return document.getElementById(id); }
+
+function toast(msg, isError) {
+  var el = $("toast");
+  el.textContent = msg;
+  if (isError) el.classList.add("error");
+  else el.classList.remove("error");
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function () { el.classList.remove("show"); }, 2600);
+}
+
+function api(path, options) {
+  options = options || {};
+  return fetch(API_BASE + path, {
+    headers: { "Content-Type": "application/json" },
+    method: options.method || "GET",
+    body: options.body
+  }).then(function (res) {
+    return res.json().catch(function () { return {}; }).then(function (data) {
+      if (!res.ok) throw new Error(data.error || ("Error " + res.status));
+      return data;
+    });
+  }).catch(function (err) {
+    if (err instanceof TypeError) {
+      throw new Error("No se pudo conectar con el Worker. Revisa la URL, el binding DB o CORS.");
+    }
+    throw err;
+  });
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function openModal(id) { $(id).classList.add("show"); }
+function closeModal(id) { $(id).classList.remove("show"); }
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+var monedas = [];
+
+/* ============================================================
+   TABS
+   ============================================================ */
+var tabButtons = document.querySelectorAll(".tab-btn");
+for (var i = 0; i < tabButtons.length; i++) {
+  tabButtons[i].addEventListener("click", function () {
+    var tab = this.getAttribute("data-tab");
+    for (var j = 0; j < tabButtons.length; j++) {
+      tabButtons[j].classList.toggle("active", tabButtons[j] === this);
+    }
+    $("panel-monedas").classList.toggle("active", tab === "monedas");
+    $("panel-metodos").classList.toggle("active", tab === "metodos");
+  });
+}
+
+/* Cerrar modales con botones Cancelar y clic fuera */
+document.querySelectorAll("[data-close]").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    closeModal(btn.getAttribute("data-close"));
+  });
+});
+document.querySelectorAll(".modal-overlay").forEach(function (ov) {
+  ov.addEventListener("click", function (e) {
+    if (e.target === ov) ov.classList.remove("show");
+  });
+});
+
+/* ============================================================
+   MONEDAS
+   ============================================================ */
+function cargarMonedas() {
+  var ul = $("lista-monedas");
+  return api("/monedas").then(function (data) {
+    monedas = data || [];
+    renderMonedas();
+    renderSelectMonedas();
+  }).catch(function (err) {
+    ul.innerHTML = '<li class="empty">Error: ' + escapeHtml(err.message) + '</li>';
+  });
+}
+
+function renderMonedas() {
+  var ul = $("lista-monedas");
+  if (!monedas.length) {
+    ul.innerHTML = '<li class="empty">No hay monedas todavía. Pulsa "+ Añadir moneda".</li>';
+    return;
+  }
+  var html = "";
+  for (var i = 0; i < monedas.length; i++) {
+    var m = monedas[i];
+    html += '<li>' +
+      '<div class="item-info">' +
+        '<span class="title">' + escapeHtml(m.nombre) + ' (' + escapeHtml(m.sigla) + ')</span>' +
+        '<span class="sub">1 ' + escapeHtml(m.sigla) + ' = ' + m.valor_cup + ' CUP</span>' +
+      '</div>' +
+      '<div class="item-actions">' +
+        '<button class="ghost sm" onclick="editarMoneda(' + m.id + ')">Editar</button>' +
+        '<button class="danger sm" onclick="eliminarMoneda(' + m.id + ', \'' + escapeHtml(m.sigla) + '\')">Borrar</button>' +
+      '</div>' +
+    '</li>';
+  }
+  ul.innerHTML = html;
+}
+
+function renderSelectMonedas() {
+  var sel = $("metodo-moneda");
+  var valorActual = sel.value;
+  sel.innerHTML = '<option value="" disabled selected>-- Selecciona una moneda --</option>';
+  for (var i = 0; i < monedas.length; i++) {
+    var m = monedas[i];
+    var opt = document.createElement("option");
+    opt.value = m.id;
+    opt.textContent = m.nombre + " (" + m.sigla + ")";
+    sel.appendChild(opt);
+  }
+  if (valorActual && monedas.some(function (m) { return String(m.id) === valorActual; })) {
+    sel.value = valorActual;
+  }
+}
+
+function abrirModalMoneda(modo, m) {
+  $("form-moneda").reset();
+  $("moneda-id").value = "";
+  if (modo === "editar" && m) {
+    $("modal-moneda-title").textContent = "Editar moneda";
+    $("moneda-id").value = m.id;
+    $("moneda-nombre").value = m.nombre;
+    $("moneda-sigla").value = m.sigla;
+    $("moneda-valor").value = m.valor_cup;
+  } else {
+    $("modal-moneda-title").textContent = "Añadir moneda";
+  }
+  openModal("modal-moneda");
+  $("moneda-nombre").focus();
+}
+
+function editarMoneda(id) {
+  var m = null;
+  for (var i = 0; i < monedas.length; i++) {
+    if (monedas[i].id === id) { m = monedas[i]; break; }
+  }
+  if (m) abrirModalMoneda("editar", m);
+}
+
+function eliminarMoneda(id, sigla) {
+  if (!confirm("¿Eliminar la moneda " + sigla + "?")) return;
+  api("/monedas/" + id, { method: "DELETE" }).then(function () {
+    toast("Moneda eliminada");
+    return cargarMonedas();
+  }).then(function () {
+    return cargarMetodos();
+  }).catch(function (err) {
+    toast(err.message, true);
+  });
+}
+
+/* ============================================================
+   MÉTODOS DE PAGO
+   ============================================================ */
+function cargarMetodos() {
+  var ul = $("lista-metodos");
+  return api("/metodos-pago").then(function (data) {
+    renderMetodos(data || []);
+  }).catch(function (err) {
+    ul.innerHTML = '<li class="empty">Error: ' + escapeHtml(err.message) + '</li>';
+  });
+}
+
+function renderMetodos(metodos) {
+  var ul = $("lista-metodos");
+  if (!metodos.length) {
+    ul.innerHTML = '<li class="empty">No hay métodos de pago todavía. Pulsa "+ Añadir método".</li>';
+    return;
+  }
+  var html = "";
+  for (var i = 0; i < metodos.length; i++) {
+    var m = metodos[i];
+    html += '<li>' +
+      '<div class="item-info">' +
+        '<span class="title">' + escapeHtml(m.nombre) + '</span>' +
+        '<span class="sub">Moneda: ' + escapeHtml(m.moneda_nombre) + ' (' + escapeHtml(m.moneda_sigla) + ') · 1 = ' + m.moneda_valor_cup + ' CUP</span>' +
+      '</div>' +
+      '<div class="item-actions">' +
+        '<button class="ghost sm" onclick="editarMetodo(' + m.id + ')">Editar</button>' +
+        '<button class="danger sm" onclick="eliminarMetodo(' + m.id + ', \'' + escapeHtml(m.nombre) + '\')">Borrar</button>' +
+      '</div>' +
+    '</li>';
+  }
+  ul.innerHTML = html;
+}
+
+function abrirModalMetodo(modo, m) {
+  $("form-metodo").reset();
+  $("metodo-id").value = "";
+  if (modo === "editar" && m) {
+    $("modal-metodo-title").textContent = "Editar método de pago";
+    $("metodo-id").value = m.id;
+    $("metodo-nombre").value = m.nombre;
+    $("metodo-moneda").value = m.moneda_id;
+  } else {
+    $("modal-metodo-title").textContent = "Añadir método de pago";
+    $("metodo-moneda").selectedIndex = 0;
+  }
+  openModal("modal-metodo");
+  $("metodo-nombre").focus();
+}
+
+function editarMetodo(id) {
+  api("/metodos-pago").then(function (metodos) {
+    var m = null;
+    for (var i = 0; i < metodos.length; i++) {
+      if (metodos[i].id === id) { m = metodos[i]; break; }
+    }
+    if (m) abrirModalMetodo("editar", m);
+  }).catch(function (err) {
+    toast(err.message, true);
+  });
+}
+
+function eliminarMetodo(id, nombre) {
+  if (!confirm("¿Eliminar el método \"" + nombre + "\"?")) return;
+  api("/metodos-pago/" + id, { method: "DELETE" }).then(function () {
+    toast("Método eliminado");
+    return cargarMetodos();
+  }).catch(function (err) {
+    toast(err.message, true);
+  });
+}
+
+/* ============================================================
+   BOTONES "AÑADIR"
+   ============================================================ */
+$("btn-add-moneda").addEventListener("click", function () {
+  abrirModalMoneda("crear");
+});
+$("btn-add-metodo").addEventListener("click", function () {
+  abrirModalMetodo("crear");
+});
+
+/* ============================================================
+   SUBMIT FORM MONEDA
+   ============================================================ */
+$("form-moneda").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var id = $("moneda-id").value;
+  var payload = {
+    nombre: $("moneda-nombre").value.trim(),
+    sigla: $("moneda-sigla").value.trim(),
+    valor_cup: Number($("moneda-valor").value)
+  };
+  var btn = $("moneda-submit");
+  btn.disabled = true;
+  var p = id
+    ? api("/monedas/" + id, { method: "PUT", body: JSON.stringify(payload) })
+    : api("/monedas", { method: "POST", body: JSON.stringify(payload) });
+
+  p.then(function () {
+    toast(id ? "Moneda actualizada" : "Moneda creada");
+    closeModal("modal-moneda");
+    return cargarMonedas();
+  }).then(function () {
+    return cargarMetodos();
+  }).catch(function (err) {
+    toast(err.message, true);
+  }).finally(function () {
+    btn.disabled = false;
+  });
+});
+
+/* ============================================================
+   SUBMIT FORM METODO
+   ============================================================ */
+$("form-metodo").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var id = $("metodo-id").value;
+  var payload = {
+    nombre: $("metodo-nombre").value.trim(),
+    moneda_id: Number($("metodo-moneda").value)
+  };
+  if (!payload.moneda_id) {
+    toast("Debes seleccionar una moneda", true);
+    return;
+  }
+  var btn = $("metodo-submit");
+  btn.disabled = true;
+  var p = id
+    ? api("/metodos-pago/" + id, { method: "PUT", body: JSON.stringify(payload) })
+    : api("/metodos-pago", { method: "POST", body: JSON.stringify(payload) });
+
+  p.then(function () {
+    toast(id ? "Método actualizado" : "Método creado");
+    closeModal("modal-metodo");
+    return cargarMetodos();
+  }).catch(function (err) {
+    toast(err.message, true);
+  }).finally(function () {
+    btn.disabled = false;
+  });
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+cargarMonedas().then(function () {
+  return cargarMetodos();
+});
+</script>
+</body>
+</html>
